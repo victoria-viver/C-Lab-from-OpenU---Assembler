@@ -1,0 +1,186 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <unistd.h>
+
+void addToSymbolsList ( char *label, 
+			int address,
+			int isExtern,
+			int isCmd)
+{
+	if (!isExistInSymbolsList (label))
+	{
+		symbolsListNodePointer t = (symbolsListNodePointer) malloc (sizeof (symbolsListNode));
+
+		t->label = malloc (sizeof (char) * (strlen (label) + 1));
+		strcpy (t->label, label);
+
+		t->address = address;
+		t->isExtern = isExtern;
+
+		if (!isExtern)
+			t->isCmd = isCmd;
+		else
+			t->isCmd = -1;
+	
+		if (symbolsListHead == NULL)
+		{
+			symbolsListHead = t;
+			symbolsListTail = symbolsListHead;
+		}
+		else
+		{
+			symbolsListTail->next = t;
+			symbolsListTail = t;
+		}
+	}
+	else
+		printf ("ERROR: SYMBOL ALREADY EXISTS\n");
+}
+
+int isExistInSymbolsList (char *label)
+{
+	int isExist = 0;
+	symbolsListNodePointer t = symbolsListHead;
+
+	while (t)
+	{	
+		if (strcmp (label, t->label) == EQUAL)
+			isExist++;		
+		t = t->next;
+	}
+
+	return isExist;
+}
+
+void printSymbolsList ()
+{
+	symbolsListNodePointer t = symbolsListHead;
+
+	printf ("\n-----SYMBOLS TABLE-----\n");
+
+	while (t)
+	{	
+		printf ("\nlabel:%s\n", t->label);
+		printf ("address:%d\n", t->address);
+		printf ("isExtern:%d\n", t->isExtern);
+		printf ("isCmd:%d\n", t->isCmd);
+		
+		t = t->next;
+	}
+}
+
+void addToDataEncodingList (int value)
+{
+	encodingListNodePointer t = (encodingListNodePointer) malloc (sizeof (encodingListNode));
+
+	t->address = dc;
+	t->value = value;
+	t->word = convertToBinary (value, WORD_MAX_LENGTH);
+
+	if (dataEncodingListHead == NULL)
+	{
+		dataEncodingListHead = t;
+		dataEncodingListTail = dataEncodingListHead;
+	}
+	else
+
+	{
+		dataEncodingListTail->next = t;
+		dataEncodingListTail = t;
+	}
+
+	dc++;
+}
+
+void printDataEncodingList ()
+{
+	encodingListNodePointer t = dataEncodingListHead;
+
+	printf ("\n-----DATA ENCODING TABLE-----\n");
+
+	while (t)
+	{	
+		printf ("\naddress:%d\n", t->address);
+		printf ("value:%d\n", t->value);
+		printf ("word:%s\n", t->word);
+		
+		t = t->next;
+	}
+}
+
+void updateAddressesAfterFirstRead ()
+{
+	symbolsListNodePointer t = symbolsListHead;
+	encodingListNodePointer d = dataEncodingListHead;
+
+	while (t)
+	{	
+		if (!(t->isExtern) && !(t->isCmd))
+			t->address += ic;
+		t = t->next;
+	}
+	
+	while (d)
+	{	
+		d->address += ic;
+		d = d->next;
+	}
+}
+
+encodingListNodePointer addToCodeEncodingList (char *word)
+{
+	encodingListNodePointer t = (encodingListNodePointer) malloc (sizeof (encodingListNode));
+
+	t->word = malloc (sizeof (char) * (WORD_MAX_LENGTH + 1));
+	strcpy (t->word, word);
+
+	t->address = icsr;
+
+	icsr++;
+
+	if (codeEncodingListHead == NULL)
+	{
+		codeEncodingListHead = t;
+		codeEncodingListTail = codeEncodingListHead;
+	}
+	else
+	{
+		codeEncodingListTail->next = t;
+		codeEncodingListTail = t;
+	}
+
+	return t;
+}
+
+void printCodeEncodingList ()
+{
+	encodingListNodePointer t = codeEncodingListHead;
+
+	printf ("\n-----CODE ENCODING TABLE-----\n");
+
+	while (t)
+	{	
+		printf ("\naddress:%d\n", t->address);
+		/*printf ("value:%d\n", t->value);*/
+		printf ("word:%s\n", t->word);
+		
+		t = t->next;
+	}
+}
+
+int findAddressInSymbolsList (char *label)
+{
+	symbolsListNodePointer t = symbolsListHead;
+
+	while (t)
+	{	
+		if (strcmp (label, t->label) == EQUAL)
+			return t->address;
+		
+		t = t->next;
+	}
+	
+	return 0;
+}

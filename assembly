@@ -1,0 +1,28 @@
+
+;MY COMMENT
+X:    .data	+7,-57  ,17 ,9
+STR:	.string "abc"
+MAT8:	.mat [2][3]
+MAT5:	.mat [2][2] 4, -5,	7,9
+	.entry	LOOP
+	.extern	W
+MAIN:   mov #1, r2
+	dec X
+	add #4, MAT5[r2][r5]
+	mov r1, r2
+	mov X, r1
+	cmp W, r1
+	add X, r0
+	sub #-3, r4
+	lea X, r5
+LOOP:   not r6
+	clr r3
+	inc r7
+	dec X
+	jmp W
+	bne X
+	red r1
+	prn r1
+	jsr X
+	rts
+	stop
